@@ -4,10 +4,81 @@ Run rust program
 
 `cargo run`
 
+OUTPUT TEXTi
+
+
+@@ Standard printing @@
+#![allow(unused)]
+fn main() {
+println!("Hello World");
+}
+
+@@ Intersperse text @@
+
+#![allow(unused)]
+fn main() {
+let x = 42;
+println!("My lucky number is {}.", x);
+}
+
+@@ debug representation @@
+
+#![allow(unused)]
+fn main() {
+let xs = vec![1, 2, 3];
+println!("The list is: {:?}", xs);
+}
+
+@@ print errors @@
+- Use eprintln! to output to stderr
+
+#![allow(unused)]
+fn main() {
+println!("This is information");
+eprintln!("This is an error! :(");
+}
+
+@@ print performance @@
+printing to the terminal can be surprisingly slow using println!(string).
+Instead, its recommended to use a BufWriter (to print in batches
+
+#![allow(unused)]
+fn main() {
+    use std::io::{self, Write};
+
+    let stdout = io::stdout(); // get the global stdout entity
+    let mut handle = io::BufWriter::new(stdout); // optional: wrap that handle in a buffer
+    writeln!(handle, "foo: {}", 42); // add `?` if you care about errors here
+}
+
+@@ can also lock the stdout @@
+
+#![allow(unused)]
+fn main() {
+use std::io::{self, Write};
+
+let stdout = io::stdout(); // get the global stdout entity
+let mut handle = stdout.lock(); // acquire a lock on it
+writeln!(handle, "foo: {}", 42); // add `?` if you care about errors here
+}
 
 
 
-Get raw arguments
+CLI
+
+@@ Create progress bar @@
+
+fn main() {
+    let pb = indicatif::ProgressBar::new(100);
+    for i in 0..100 {
+        do_hard_work();
+        pb.println(format!("[+] finished #{}", i));
+        pb.inc(1);
+    }
+    pb.finish_with_message("done");
+}
+
+@@ Get raw arguments @@
 
 fn main() {
     let pattern = std::env::args().nth(1).expect("no pattern given");
@@ -20,7 +91,7 @@ fn main() {
 ERROR HANDLING
 https://rust-cli.github.io/book/tutorial/errors.html
 
-@@ Use panic!( ) to throw an exception@@
+@@ Use panic!( ) to throw an exception that exits the thread immediately@@
 let result = std::fs::read_to_string("test.txt");
 let content = match result {
     Ok(content) => { content },
@@ -28,7 +99,74 @@ let content = match result {
 };
 println!("file content: {}", content);
 
-Parser
+
+@@ Can also return early @@
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+let result = std::fs::read_to_string("test.txt");
+let content = match result {
+    Ok(content) => { content },
+    Err(error) => { return Err(error.into()); }
+};
+Ok(())
+}
+
+@@ Can also use a ? mark @@
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let content = std::fs::read_to_string("test.txt")?;
+    println!("file content: {}", content);
+    Ok(())
+}
+
+@@ Create custom error type @@
+#[derive(Debug)]
+struct CustomError(String);
+
+fn main() -> Result<(), CustomError> {
+    let path = "test.txt";
+    let content = std::fs::read_to_string(path)
+        .map_err(|err| CustomError(format!("Error reading `{}`: {}", path, err)))?;
+    println!("file content: {}", content);
+    Ok(())
+}
+
+@@ anyhow is a library that can help us create a chain of error messages@@
+use anyhow::{Context, Result};
+
+fn main() -> Result<()> {
+    let path = "test.txt";
+    let content = std::fs::read_to_string(path)
+        .with_context(|| format!("could not read file `{}`", path))?;
+    println!("file content: {}", content);
+    Ok(())
+}
+
+LOGGING
+
+use log::{info, warn};
+
+fn main() {
+    env_logger::init();
+    info!("starting up");
+    warn!("oops, nothing implemented!");
+}
+
+
+
+CRATES
+
+@INDICATIF
+
+fn main() {
+    let pb = indicatif::ProgressBar::new(100);
+    for i in 0..100 {
+        do_hard_work();
+        pb.println(format!("[+] finished #{}", i));
+        pb.inc(1);
+    }
+    pb.finish_with_message("done");
+}
+
+@PARSER
 
 use clap::Parser;
 
