@@ -4,8 +4,7 @@ Run rust program
 
 `cargo run`
 
-OUTPUT TEXTi
-
+OUTPUT TEXT
 
 @@ Standard printing @@
 #![allow(unused)]
@@ -62,6 +61,22 @@ let mut handle = stdout.lock(); // acquire a lock on it
 writeln!(handle, "foo: {}", 42); // add `?` if you care about errors here
 }
 
+ARRAYS & VECTORS
+*fixed size
+*type and length must be known at compile time
+*format: let variable: [datatype; arraysize] = [x, y, z]
+
+@@ string array @@
+let options: [&str; 3] = ["Option A", "Option B", "Option C"];
+
+@@ number array @@
+let arr: [i32; 3] = [1, 2, 3];
+
+
+FOR LOOPS
+for &item in &arr {
+    println!("{}", item);
+}
 
 
 CLI
