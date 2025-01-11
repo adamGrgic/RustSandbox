@@ -1,1 +1,14 @@
 guessing_game/target
+# Ignore target directory (build artifacts)
+cli-app\target
+
+# Ignore Cargo.lock for library projects
+Cargo.lock
+
+# Ignore debug/release builds
+**/debug/
+**/release/
+
+# Ignore temporary and metadata files
+.rustc_info.json
+*.dSYM
