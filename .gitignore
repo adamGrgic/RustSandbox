@@ -12,3 +12,21 @@ Cargo.lock
 # Ignore temporary and metadata files
 .rustc_info.json
 *.dSYM
+
+htmx-app-0/target
+lists-0/target
+C:\repos\RustSandbox\lists-0\target
+cli-app/target
+# Ignore target directory (build artifacts)
+cli-app\target
+
+# Ignore Cargo.lock for library projects
+Cargo.lock
+
+# Ignore debug/release builds
+**/debug/
+**/release/
+
+# Ignore temporary and metadata files
+.rustc_info.json
+*.dSYM
