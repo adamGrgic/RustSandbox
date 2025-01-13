@@ -1,90 +1,74 @@
 use hyper::{
+    Body, Client, Request, Response, Server, Uri,
     client::HttpConnector,
     service::{make_service_fn, service_fn},
-    Body, Client, Request, Response, Server, Uri,
 };
-use hyper::header:: CONTENT_TYPE;
-use hyper::body::to_bytes;
+use hyper::header::CONTENT_TYPE;
 use std::convert::Infallible;
 
 #[tokio::main]
 async fn main() {
-    // Address and port for the proxy server
-    let addr = ([172, 22, 35, 15], 8080).into();
+    // Proxy server will run on port 43127
+    let proxy_port = 43127;
 
-    // Shared Hyper HTTP client
+    // The actual backend server (modify as necessary)
+    let backend_url = "https://localhost:44375"; // Redirect to actual backend if not intercepted
+
+    // Create a shared Hyper client
     let client = Client::new();
 
-    // Start the server
     let make_svc = make_service_fn(move |_| {
         let client = client.clone();
-        async {
+        let backend_url = backend_url.to_string();
+        async move {
             Ok::<_, Infallible>(service_fn(move |req| {
-                handle_request(req, client.clone())
+                handle_request(req, client.clone(), backend_url.clone())
             }))
         }
     });
 
-    println!("Proxy server running on {}", addr);
-    let server = Server::bind(&addr).serve(make_svc);
-
-    if let Err(e) = server.await {
-        eprintln!("Server error: {}", e);
+    // Start the proxy server
+    let addr = ([127, 0, 0, 1], proxy_port).into();
+    println!("Proxy server listening on http://localhost:{}", proxy_port);
+    if let Err(e) = Server::bind(&addr).serve(make_svc).await {
+        eprintln!("Error running proxy server: {}", e);
     }
 }
 
 async fn handle_request(
     mut req: Request<Body>,
     client: Client<HttpConnector>,
+    backend_url: String,
 ) -> Result<Response<Body>, hyper::Error> {
-    // Check if the request matches an endpoint to intercept
-    println!("handle_request called");
+    // Check if the request should be intercepted
     if should_intercept(req.uri()) {
-        println!("Intercepted request to: {}", req.uri());
+        println!("Intercepted request: {}", req.uri());
         return Ok(Response::builder()
             .status(200)
             .header(CONTENT_TYPE, "application/json")
-            .body(Body::from(r#"{"dummyKey": "dummyValue"}"#))
+            .body(Body::from(r#"{"intercepted": true, "message": "This is dummy data"}"#))
             .unwrap());
     }
 
-    // Forward the request to the target ERP system
-    let target_base = "http://erp-system.local"; // Replace with actual target base URL
-    let target_uri = format!("{}{}", target_base, req.uri().path_and_query().map(|x| x.as_str()).unwrap_or(""));
+    // Forward the request to the actual backend server
+    let backend_uri = format!(
+        "{}{}",
+        backend_url,
+        req.uri().path_and_query().map(|x| x.as_str()).unwrap_or("")
+    );
 
-    println!("Forwarding request to: {}", target_uri);
-    *req.uri_mut() = target_uri.parse::<Uri>().unwrap();
+    println!("Forwarding request to backend: {}", backend_uri);
+    *req.uri_mut() = backend_uri.parse::<Uri>().unwrap();
 
-    // Send the request to the target server
-    let response = client.request(req).await;
-
-    // Handle the response from the target server
-    match response {
-        Ok(res) => {
-            println!("Received response with status: {}", res.status());
-            let (parts, body) = res.into_parts();
-            let body_bytes = to_bytes(body).await?;
-            let response = Response::from_parts(parts, Body::from(body_bytes));
-            Ok(response)
-        }
-        Err(err) => {
-            eprintln!("Error forwarding request: {}", err);
-            Ok(Response::builder()
-                .status(502)
-                .body(Body::from("Proxy error"))
-                .unwrap())
-        }
-    }
+    client.request(req).await
 }
 
+// Function to determine if a request should be intercepted
 fn should_intercept(uri: &Uri) -> bool {
-    // Define paths to intercept
     let intercept_paths = vec![
-        "/ping"
+        "/ping",  // Add other paths to intercept
     ];
-     // Check if the path matches any of the intercept paths
-    let path = uri.path(); // `uri.path()` returns a &str
-    intercept_paths.iter().any(|p| path.starts_with(p))
 
+    intercept_paths.iter().any(|p| uri.path().starts_with(p))
 }
 
