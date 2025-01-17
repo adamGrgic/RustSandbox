@@ -1,21 +1,16 @@
-use actix_web::{web, App, HttpServer, Responder};
 use reqwest::Client;
 use serde::Serialize;
-use std::collections::HashMap;
+use serde_json::Value;
 
 #[derive(Serialize)]
 struct PostData {
     title: String,
     body: String,
-    userId: u32,
+    user_id: u32,
 }
 
-async fn hello() -> impl Responder {
-    "Hello, world!"
-}
-
-#[actix_web::main]
-async fn main() -> std::io::Result<()> {
+#[tokio::main]
+async fn main() -> Result<(), reqwest::Error> {
 
     let url = "localhost:8001";
 
@@ -26,7 +21,7 @@ async fn main() -> std::io::Result<()> {
     let payload = PostData {
         title: "Hello, World!".into(),
         body: "This is a test post.".into(),
-        userId: 1,
+        user_id: 1,
     };
 
     // Send a POST request
@@ -35,8 +30,9 @@ async fn main() -> std::io::Result<()> {
         .send()
         .await?;
 
+
     // Parse the response as JSON
-    let json: serde_json::Value = response.json().await?;
+    let json: Value = response.json().await?;
     println!("Response JSON: {}", json);
 
     Ok(())
