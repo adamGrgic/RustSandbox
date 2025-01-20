@@ -28,6 +28,12 @@ fn main() {
     println!("The value of x is: {x}");
     // expected output : 6
 
+    // another benefit of shadowing is reassigning types
+    // here we have spaces which is a string but then after
+    // spaces is a number
+    let spaces = "   ";
+    let spaces = spaces.len();
+
 
 
 }

@@ -1,0 +1,8 @@
+this is a section dedicated to working with command line interfaces in rust.
+
+
+Useful packages
+---------------
+TUI
+Crossterm
+Clap

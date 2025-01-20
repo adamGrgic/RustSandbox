@@ -191,3 +191,58 @@ struct Cli {
     path: std::path::PathBuf
 }
 
+
+@WEBSERVER
+with actix (3.7)
+
+use actix_web::{web, App, HttpServer, Responder};
+
+async fn hello() -> impl Responder {
+    "Hello, world!"
+}
+
+#[actix_web::main]
+async fn main() -> std::io::Result<()> {
+    HttpServer::new(|| {
+        App::new()
+            .route("/", web::get().to(hello)) // Route for GET /
+    })
+    .bind("127.0.0.1:8080")? // Bind to localhost:8080
+    .run()
+    .await
+}
+
+
+
+with route params
+
+use actix_web::{web, App, HttpServer, Responder};
+use serde::Deserialize;
+
+#[derive(Deserialize)]
+struct Info {
+    name: String,
+}
+
+async fn greet(info: web::Json<Info>) -> impl Responder {
+    format!("Hello, {}!", info.name)
+}
+
+#[actix_web::main]
+async fn main() -> std::io::Result<()> {
+    HttpServer::new(|| {
+        App::new()
+            .route("/greet", web::post().to(greet)) // Route for POST /greet
+    })
+    .bind("127.0.0.1:8080")?
+    .run()
+    .await
+}
+
+
+
+
+#tokio
+
+
+
