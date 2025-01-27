@@ -1,0 +1,48 @@
+[
+    {
+        "name":"Ryan",
+        "age":32,
+        "is_student": false
+    },
+    {
+        "name":"Luis",
+        "age": 18,
+        "is_student": true
+    },
+    {
+        "name":"Chris",
+        "age": 18,
+        "is_student": true
+    },
+    {
+        "name":"Maddie",
+        "age": 21,
+        "is_student": true
+    },
+    {
+        "name":"Kyle",
+        "age": 18,
+        "is_student": true
+    },
+    {
+        "name":"Sarah",
+        "age": 18,
+        "is_student": true
+    },
+    {
+        "name":"Thomas",
+        "age": 25,
+        "is_student": false
+    },
+    {
+        "name":"Lindsey",
+        "age": 19,
+        "is_student": false
+    },
+    {
+        "name":"Frank",
+        "age":23,
+        "is_student": false
+    }
+
+]
