@@ -30,3 +30,6 @@ Cargo.lock
 # Ignore temporary and metadata files
 .rustc_info.json
 *.dSYM
+
+
+**/target/
